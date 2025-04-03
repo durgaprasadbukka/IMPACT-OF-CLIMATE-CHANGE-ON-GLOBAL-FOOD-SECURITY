@@ -1,0 +1,266 @@
+---
+title: "IMPACT OF CLIMATE CHANGE ON GLOBAL FOOD SECURITY"
+author: "Durga Prasad Bukka"
+date: "2024-04-17"
+output: word_document
+---
+  
+```{r}
+# Read the dataset
+data <- read.csv("C:/Users/bdurg/Downloads/R Impacts of climate change on food security/Global Food Security Index 2019 final.csv")
+# Check column names of data dataset
+print(colnames(data))
+```
+
+```{r}
+# Read the dataset
+data <- read.csv("C:/Users/bdurg/Downloads/R Impacts of climate change on food security/Global Food Security Index 2019 final.csv")
+
+# Check for missing values
+print(colSums(is.na(data)))
+
+# Rename columns for easier manipulation
+colnames(data) <- c("Rank", "Country", "Overall_Score", "Affordability", "Availability", "Quality_Safety")
+
+# Remove rows with missing values, if any
+data <- na.omit(data)
+
+# Ensure data consistency and proper data types
+data$Overall_Score <- as.numeric(data$Overall_Score)
+data$Affordability <- as.numeric(data$Affordability)
+data$Availability <- as.numeric(data$Availability)
+data$Quality_Safety <- as.numeric(data$Quality_Safety)
+
+# Check summary statistics of numeric columns
+summary(data[, c("Overall_Score", "Affordability", "Availability", "Quality_Safety")])
+
+# Check the structure of the cleaned dataset
+str(data)
+
+```
+PEARSON CORRELATION
+```{r}
+# Check the structure of the dataset
+data <- read.csv("C:/Users/bdurg/Downloads/R Impacts of climate change on food security/Global Food Security Index 2019 final.csv")
+
+str(data)
+
+# Correct column names
+names(data)[names(data) == "Quality...safety"] <- "Quality_Safety"
+
+# Perform Pearson correlation analysis
+correlation_results <- cor(data[, c("Overall.Score", "Affordability", "Availability", "Quality_Safety")], method = "pearson")
+
+# Print correlation results
+print(correlation_results)
+```
+LINEAR REGRESSION
+
+```{r}
+data <- read.csv("C:/Users/bdurg/Downloads/R Impacts of climate change on food security/Global Food Security Index 2019 final.csv")
+
+
+# Check the structure of the dataset
+str(data)
+
+# Perform linear regression analysis
+lm_model <- lm(Overall.Score ~ Affordability, data = data)
+
+# Print the summary of the linear regression model
+summary(lm_model)
+```
+MULTIPLE REGRESSION
+```{r}
+# Check the structure of the dataset
+str(data)
+
+# Perform multiple regression analysis
+lm_model <- lm(Overall.Score ~ Affordability + Availability + Quality...safety, data = data)
+
+# Print the summary of the multiple regression model
+summary(lm_model)
+
+```
+```{r}
+# Perform multiple regression analysis
+lm_model_multiple <- lm(Overall.Score ~ Affordability + Availability + Quality...safety, data = data)
+
+# Print the summary of the multiple regression model
+summary(lm_model_multiple)
+```
+Logistic Regression Analysis
+```{r}
+
+# Check the structure of the dataset
+str(data)
+
+# Assuming 'Quality...safety' is a categorical variable representing food safety ratings
+# Convert 'Quality...safety' to a factor if it's not already
+data$Quality...safety <- as.factor(data$Quality...safety)
+
+# Perform logistic regression analysis
+log_model <- glm(Quality...safety ~ Affordability + Availability, data = data, family = "binomial")
+
+# Print the summary of the logistic regression model
+summary(log_model)
+```
+Analysis of Variance (ANOVA):
+```{r}
+# Specify the number of intervals
+num_intervals <- 3
+
+# Create breaks based on quantiles
+breaks <- quantile(data$Overall.Score, probs = seq(0, 1, length.out = num_intervals + 1))
+
+# Create labels for each interval
+labels <- c("Low", "Medium", "High")
+
+# Create grouping variable based on Overall Score quartiles
+data$Country_Group <- cut(data$Overall.Score, breaks = breaks, labels = labels)
+
+# Perform ANOVA to compare mean food security index across different groups of countries
+anova_result <- aov(Overall.Score ~ Country_Group, data = data)
+
+# Print the summary of the ANOVA analysis
+summary(anova_result)
+
+
+```
+```{r}
+# Read the dataset
+data <- read.csv("C:/Users/bdurg/Downloads/R Impacts of climate change on food security/Global Food Security Index 2019 final.csv")
+
+
+# Select relevant variables for clustering (e.g., climate change and food security indices)
+selected_data <- data[, c("Overall.Score", "Affordability", "Availability", "Quality...safety")]
+
+# Scale the selected variables to have mean = 0 and standard deviation = 1
+scaled_data <- scale(selected_data)
+
+# Determine the number of clusters (you may need to choose an appropriate value based on your data and objectives)
+num_clusters <- 3
+
+# Perform k-means clustering
+kmeans_result <- kmeans(scaled_data, centers = num_clusters)
+
+# Get cluster assignments for each observation
+cluster_assignments <- kmeans_result$cluster
+
+# Add cluster assignments to the original dataset
+data$Cluster <- cluster_assignments
+
+# View the distribution of countries in each cluster
+table(data$Cluster)
+
+# Visualize the clusters 
+# For example, scatterplot matrix (pairs plot) to visualize relationships between variables colored by cluster
+pairs(scaled_data, col = kmeans_result$cluster)
+
+# Alternatively, I can plan to use other visualization techniques like cluster profiles, dendrograms, etc., depending on my preference and data characteristics
+
+
+```
+
+
+```{r}
+# Scatter plot between Overall Score and Affordability
+plot(data$Overall.Score, data$Affordability,
+     xlab = "Overall Score", ylab = "Affordability",
+     main = "Scatter Plot: Overall Score vs. Affordability")
+
+```
+
+```{r}
+install.packages(c("pheatmap"))
+
+library(pheatmap)
+
+# Compute the correlation matrix
+correlation_matrix <- cor(data[, c("Overall.Score", "Affordability", "Availability", "Quality...safety")])
+
+# Define a color palette from red (negative correlation) to white (zero correlation) to blue (positive correlation)
+color_palette <- colorRampPalette(c("brown", "white", "pink"))(50)
+
+# Create the heatmap
+pheatmap(correlation_matrix,
+         color = color_palette,
+         display_numbers = TRUE,  # Show correlation values on the heatmap
+         clustering_distance_rows = "euclidean",
+         clustering_distance_cols = "euclidean",
+         clustering_method = "complete",
+         main = "Heatmap of Correlation Matrix",
+         xlab = "Food Security Index Components",
+         ylab = "Food Security Index Components")
+
+
+```
+```{r}
+install.packages(c("plotly"))
+library(plotly)
+
+heatmap_data <- as.matrix(data[, c("Overall.Score", "Affordability")])
+rownames(heatmap_data) = data$Country
+
+fig <- plot_ly(x = colnames(heatmap_data), y = rownames(heatmap_data), z = heatmap_data,
+               type = "heatmap", colors = colorRamp(c("blue", "white", "red")))
+
+fig <- fig %>% layout(title = "Interactive Heatmap: Overall Score vs Affordability")
+fig
+
+```
+
+
+
+```{r}
+install.packages(c("ggplot2"))
+library(ggplot2)
+
+ggplot(data, aes(x = Overall.Score)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  labs(title = "Distribution of Overall Scores", x = "Overall Score", y = "Count")
+
+
+```
+```{r}
+ggplot(data, aes(x = Affordability, y = Availability)) +
+  geom_point(aes(color = Country), size = 3) +  # Color points by country for better distinction
+  geom_smooth(method = lm) +  # Add a linear regression line
+  labs(title = "Affordability vs. Availability", x = "Affordability", y = "Availability")
+
+```
+
+```{r}
+# Assume there's a column 'Region' in the dataset
+ggplot(data, aes(x = Region, y = Quality...safety)) +
+  geom_boxplot(aes(fill = Region)) +
+  labs(title = "Quality & Safety Scores by Region", x = "Region", y = "Quality & Safety")
+```
+
+
+```{r}
+install.packages(c("corrplot"))
+
+library(corrplot)
+
+numeric_data <- data[, c("Overall.Score", "Affordability", "Availability", "Quality...safety")]
+cor_matrix <- cor(numeric_data)
+
+corrplot(cor_matrix, method = "color", type = "upper", tl.col = "black", tl.srt = 45)
+
+```
+```{r}
+top_countries <- data[order(-data$Overall.Score),][1:10,]
+
+ggplot(top_countries, aes(x = reorder(Country, Overall.Score), y = Overall.Score, fill = Country)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # Makes it horizontal for better readability
+  labs(title = "Top 10 Countries by Overall Score", x = "Country", y = "Overall Score")
+
+```
+
+
+
+
+
+
+
